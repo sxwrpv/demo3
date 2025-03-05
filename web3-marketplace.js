@@ -68,7 +68,7 @@ async function uploadToIPFS(file) {
 async function listProduct() {
     const name = document.getElementById("productName").value;
     const description = document.getElementById("productDescription").value;
-    const price = document.getElementById("productPrice").value;
+    const price = web3.utils.toWei(document.getElementById("productPrice").value, "ether");
     const fileInput = document.getElementById("productImage");
 
     if (fileInput.files.length === 0) {
