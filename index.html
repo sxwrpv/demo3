@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base Web3 Marketplace</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.4/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Base Web3 Marketplace</h1>
+    <button onclick="connectWallet()">Connect Wallet</button>
+
+    <h2>List Product</h2>
+    <input type="text" id="productName" placeholder="Product Name">
+    <input type="number" id="productPrice" placeholder="Price (WEI)">
+    <button onclick="listProduct()">List Product</button>
+
+    <h2>Buy Product</h2>
+    <input type="number" id="buyProductId" placeholder="Product ID">
+    <input type="number" id="buyProductPrice" placeholder="Price (WEI)">
+    <button onclick="buyProduct()">Buy</button>
+
+    <h2>Release Funds</h2>
+    <input type="number" id="releaseProductId" placeholder="Product ID">
+    <button onclick="releaseFunds()">Release Funds</button>
+
+    <h2>Raise Dispute</h2>
+    <input type="number" id="disputeProductId" placeholder="Product ID">
+    <button onclick="raiseDispute()">Raise Dispute</button>
+
+    <script src="web3-marketplace.js"></script>
+</body>
+</html>
