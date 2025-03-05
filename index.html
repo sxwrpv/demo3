@@ -5,28 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Web3 Marketplace</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.4/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Base Web3 Marketplace</h1>
-    <button onclick="connectWallet()">Connect Wallet</button>
+    <div class="container">
+        <h1>Base Web3 Marketplace</h1>
+        <button onclick="connectWallet()">Connect Wallet</button>
 
-    <h2>List Product</h2>
-    <input type="text" id="productName" placeholder="Product Name">
-    <input type="number" id="productPrice" placeholder="Price (WEI)">
-    <button onclick="listProduct()">List Product</button>
+        <h2>List Product</h2>
+        <input type="text" id="productName" placeholder="Product Name">
+        <input type="number" id="productPrice" placeholder="Price (WEI)">
+        <button onclick="listProduct()">List Product</button>
 
-    <h2>Buy Product</h2>
-    <input type="number" id="buyProductId" placeholder="Product ID">
-    <input type="number" id="buyProductPrice" placeholder="Price (WEI)">
-    <button onclick="buyProduct()">Buy</button>
+        <h2>Buy Product</h2>
+        <input type="number" id="buyProductId" placeholder="Product ID">
+        <input type="number" id="buyProductPrice" placeholder="Price (WEI)">
+        <button onclick="buyProduct()">Buy</button>
 
-    <h2>Release Funds</h2>
-    <input type="number" id="releaseProductId" placeholder="Product ID">
-    <button onclick="releaseFunds()">Release Funds</button>
+        <h2>Release Funds</h2>
+        <input type="number" id="releaseProductId" placeholder="Product ID">
+        <button onclick="releaseFunds()">Release Funds</button>
 
-    <h2>Raise Dispute</h2>
-    <input type="number" id="disputeProductId" placeholder="Product ID">
-    <button onclick="raiseDispute()">Raise Dispute</button>
+        <h2>Raise Dispute</h2>
+        <input type="number" id="disputeProductId" placeholder="Product ID">
+        <button onclick="raiseDispute()">Raise Dispute</button>
+    </div>
 
     <script src="web3-marketplace.js"></script>
 </body>
