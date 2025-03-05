@@ -1,36 +1,31 @@
-const contractAddress = "0xa3e5f7dbb744e7f99c75bdd4adc00a94d5433ad9"; // Your deployed contract
+const contractAddress = "0xa3e5f7dbb744e7f99c75bdd4adc00a94d5433ad9"; // Deployed on Base
 const contractABI = [
     {
-        "inputs": [],
-        "name": "productCount",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }, { "internalType": "uint256", "name": "_price", "type": "uint256" }],
+        "inputs": [
+            { "internalType": "string", "name": "_name", "type": "string" },
+            { "internalType": "string", "name": "_description", "type": "string" },
+            { "internalType": "uint256", "name": "_price", "type": "uint256" },
+            { "internalType": "string", "name": "_imageCID", "type": "string" }
+        ],
         "name": "listProduct",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
-        "inputs": [{ "internalType": "uint256", "name": "_id", "type": "uint256" }],
+        "inputs": [
+            { "internalType": "uint256", "name": "_id", "type": "uint256" }
+        ],
         "name": "buyProduct",
         "outputs": [],
         "stateMutability": "payable",
         "type": "function"
     },
     {
-        "inputs": [{ "internalType": "uint256", "name": "_id", "type": "uint256" }],
+        "inputs": [
+            { "internalType": "uint256", "name": "_id", "type": "uint256" }
+        ],
         "name": "releaseFunds",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [{ "internalType": "uint256", "name": "_id", "type": "uint256" }],
-        "name": "raiseDispute",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -38,44 +33,72 @@ const contractABI = [
 ];
 
 let web3;
-let marketplaceContract;
-let userAccount;
+let contract;
+const pinataApiKey = "b71b9c9f1c308cc3b745";
+const pinataSecretApiKey = "eafa6d863c7d434cfe6d722db1f576579a454c3cb581a8b0ea7a359c1d34c28b";
 
 async function connectWallet() {
     if (window.ethereum) {
         web3 = new Web3(window.ethereum);
         await window.ethereum.request({ method: "eth_requestAccounts" });
-        const accounts = await web3.eth.getAccounts();
-        userAccount = accounts[0];
-        marketplaceContract = new web3.eth.Contract(contractABI, contractAddress);
-        alert(`Connected: ${userAccount}`);
+        contract = new web3.eth.Contract(contractABI, contractAddress);
+        alert("Wallet connected!");
     } else {
         alert("Please install MetaMask!");
     }
 }
 
+async function uploadToIPFS(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+        method: "POST",
+        headers: {
+            "pinata_api_key": pinataApiKey,
+            "pinata_secret_api_key": pinataSecretApiKey
+        },
+        body: formData
+    });
+
+    const data = await response.json();
+    return data.IpfsHash;
+}
+
 async function listProduct() {
     const name = document.getElementById("productName").value;
+    const description = document.getElementById("productDescription").value;
     const price = document.getElementById("productPrice").value;
-    await marketplaceContract.methods.listProduct(name, price).send({ from: userAccount });
-    alert("Product Listed!");
+    const fileInput = document.getElementById("productImage");
+
+    if (fileInput.files.length === 0) {
+        alert("Please select an image");
+        return;
+    }
+
+    const imageCID = await uploadToIPFS(fileInput.files[0]);
+    const accounts = await web3.eth.getAccounts();
+    await contract.methods.listProduct(name, description, price, imageCID).send({ from: accounts[0] });
+    alert("Product listed successfully!");
 }
 
-async function buyProduct() {
-    const productId = document.getElementById("buyProductId").value;
-    const price = document.getElementById("buyProductPrice").value;
-    await marketplaceContract.methods.buyProduct(productId).send({ from: userAccount, value: price });
-    alert("Product Purchased!");
-}
+async function fetchProducts() {
+    const productCount = await contract.methods.productCount().call();
+    const productGrid = document.getElementById("productGrid");
+    productGrid.innerHTML = "";
 
-async function releaseFunds() {
-    const productId = document.getElementById("releaseProductId").value;
-    await marketplaceContract.methods.releaseFunds(productId).send({ from: userAccount });
-    alert("Funds Released!");
-}
+    for (let i = 1; i <= productCount; i++) {
+        const product = await contract.methods.products(i).call();
+        if (product.purchased) continue;
 
-async function raiseDispute() {
-    const productId = document.getElementById("disputeProductId").value;
-    await marketplaceContract.methods.raiseDispute(productId).send({ from: userAccount });
-    alert("Dispute Raised!");
+        productGrid.innerHTML += `
+            <div class="product-card">
+                <img src="https://ipfs.io/ipfs/${product.imageCID}" alt="${product.name}" width="150">
+                <h3>${product.name}</h3>
+                <p>${product.description}</p>
+                <p>Price: ${web3.utils.fromWei(product.price, "ether")} ETH</p>
+                <button onclick="buyProduct(${product.id}, '${product.price}')">Buy</button>
+            </div>
+        `;
+    }
 }
