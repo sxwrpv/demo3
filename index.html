@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Web3 Marketplace</title>
-    <title>MAKE UKRAINE GREAT AGAIN</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.4/dist/web3.min.js"></script>
     <style>
         body {
@@ -14,7 +13,7 @@
             padding: 20px;
             text-align: center;
         }
-        h1 {
+        h1, h2 {
             color: #333;
         }
         button {
@@ -26,56 +25,202 @@
             cursor: pointer;
             margin: 10px;
             border-radius: 5px;
+            transition: background-color 0.3s;
         }
         button:hover {
             background-color: #0056b3;
         }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        input {
+        input, textarea {
             width: 100%;
             padding: 10px;
             margin: 5px 0;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            text-align: left;
+            transition: transform 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .product-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .product-price {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .status.loading {
+            background-color: #cce5ff;
+            color: #004085;
+            display: block;
+        }
+        .tab-container {
+            margin-top: 20px;
+        }
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 0 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab-button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .wallet-status {
+            padding: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            margin: 0 5px;
         }
     </style>
 </head>
 <body>
-    <h2>All Products</h2>
-<div id="productGrid" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
-<script>fetchProducts();</script>
     <div class="container">
         <h1>Base Web3 Marketplace</h1>
-        <button onclick="connectWallet()">Connect Wallet</button>
-
-       <h2>List Product</h2>
-<input type="text" id="productName" placeholder="Product Name">
-<input type="text" id="productDescription" placeholder="Product Description">
-<input type="number" id="productPrice" placeholder="Price (WEI)">
-<input type="file" id="productImage" accept="image/*">
-<button onclick="listProduct()">List Product</button>
-
-
-        <h2>Buy Product</h2>
-        <input type="number" id="buyProductId" placeholder="Product ID">
-        <input type="number" id="buyProductPrice" placeholder="Price (WEI)">
-        <button onclick="buyProduct()">Buy</button>
-
-        <h2>Release Funds</h2>
-        <input type="number" id="releaseProductId" placeholder="Product ID">
-        <button onclick="releaseFunds()">Release Funds</button>
-
-        <h2>Raise Dispute</h2>
-        <input type="number" id="disputeProductId" placeholder="Product ID">
-        <button onclick="raiseDispute()">Raise Dispute</button>
+        
+        <div class="wallet-status">
+            <span id="walletAddress">Not connected</span>
+            <button id="connectWalletBtn" onclick="connectWallet()">Connect Wallet</button>
+        </div>
+        
+        <div id="statusMessage" class="status"></div>
+        
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="openTab('browse')">Browse Products</button>
+                <button class="tab-button" onclick="openTab('sell')">Sell Products</button>
+                <button class="tab-button" onclick="openTab('my-purchases')">My Purchases</button>
+                <button class="tab-button" onclick="openTab('my-listings')">My Listings</button>
+            </div>
+            
+            <div id="browse" class="tab-content active">
+                <h2>Available Products</h2>
+                <div id="productGrid" class="product-grid"></div>
+                <div class="pagination">
+                    <button id="prevPage" onclick="previousPage()" disabled>Previous</button>
+                    <span id="currentPage">Page 1</span>
+                    <button id="nextPage" onclick="nextPage()">Next</button>
+                </div>
+            </div>
+            
+            <div id="sell" class="tab-content">
+                <h2>List a New Product</h2>
+                <div class="form-group">
+                    <label for="productName">Product Name</label>
+                    <input type="text" id="productName" placeholder="Product Name">
+                </div>
+                <div class="form-group">
+                    <label for="productDescription">Product Description</label>
+                    <textarea id="productDescription" rows="4" placeholder="Product Description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">Price (ETH)</label>
+                    <input type="number" id="productPrice" placeholder="0.01" step="0.001" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="productImage">Product Image</label>
+                    <input type="file" id="productImage" accept="image/*">
+                </div>
+                <button id="listProductBtn" onclick="listProduct()">List Product</button>
+            </div>
+            
+            <div id="my-purchases" class="tab-content">
+                <h2>My Purchases</h2>
+                <div id="purchasesGrid" class="product-grid"></div>
+            </div>
+            
+            <div id="my-listings" class="tab-content">
+                <h2>My Listings</h2>
+                <div id="listingsGrid" class="product-grid"></div>
+            </div>
+        </div>
+        
+        <!-- Modal for product actions -->
+        <div id="productModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
+            <div style="background:white; padding:20px; border-radius:10px; max-width:500px; width:90%;">
+                <h3 id="modalTitle">Product Actions</h3>
+                <div id="modalContent"></div>
+                <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                    <button onclick="closeModal()">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="web3-marketplace.js"></script>
